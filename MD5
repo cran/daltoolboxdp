@@ -1,5 +1,5 @@
-d4d11af80aec28de7d35a93a6980ae62 *DESCRIPTION
-9c8add422ce18907bdd71f2fcb273da3 *LICENSE
+9aab04fb163e0824c5ecaac0d5c6bfb4 *DESCRIPTION
+70f9ea80603794826e1a2a8ad0b4b593 *LICENSE
 266aa68ca7f5351fb3a1ee4bd91c5082 *NAMESPACE
 496b0f7e8be888229c99e02f728a25e7 *R/bal_oversampling.R
 2c19e919c0efbe6ba198f5779d4ccac3 *R/bal_subsampling.R
@@ -8,7 +8,7 @@ e3b2315fc33a698b6df4bfc68b4923f2 *R/fs.R
 a89e191f1ae183df9e5df5e1d0bb487b *R/fs_ig.R
 307e453c84980cd671f5962afffeeb11 *R/fs_lasso.R
 f739c5d11eb44de3383d9b7f1be17de3 *R/fs_relief.R
-8e640dbcd85167d9cd6b1746bde43f9b *README.md
+d44eb66b509035a19f3211ec3a18fa04 *README.md
 342241aa20c32921ffc623eb46487e2c *inst/logo.png
 acc6005ce5b9533fb2ebf9a8670a0bfd *inst/logo.pptx
 47d4cff4ca77dfe8d48dd013a6ccb299 *inst/python/autoencoder.py
