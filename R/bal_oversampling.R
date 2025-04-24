@@ -29,7 +29,7 @@ transform.bal_oversampling <- function(obj, data, ...) {
   j <- match(obj$attribute, colnames(data))
   x <- sort((table(data[,obj$attribute])))
   result <- data[data[obj$attribute]==names(x)[length(x)],]
-
+  
   for (i in 1:(length(x)-1)) {
     small_name <- names(x)[i]
     large_name <- names(x)[length(x)]
@@ -49,4 +49,3 @@ transform.bal_oversampling <- function(obj, data, ...) {
   }
   return(result)
 }
-
