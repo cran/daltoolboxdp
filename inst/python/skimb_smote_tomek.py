@@ -1,8 +1,8 @@
-from imblearn.combine import SMOTETomek
+from imblearn.under_sampling import TomekLinks
 
-def inbalanced_create_model(random_state=42):
-    stomek = SMOTETomek(random_state=int(random_state))
-    return stomek
+def inbalanced_create_model():
+    tomek = TomekLinks()
+    return tomek
 
 def fit_resample(select_method, df_train, target_column):
     #print("Column types:", df_train.dtypes)
