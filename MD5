@@ -1,6 +1,6 @@
-d541cc036928f5e2493f2d7622bded88 *DESCRIPTION
+bda8054278cf315df8ca3677da6569f1 *DESCRIPTION
 70f9ea80603794826e1a2a8ad0b4b593 *LICENSE
-8f188ce145985f2cc98394aa6c4bb285 *NAMESPACE
+c5adc9cdc3db6141e3b2bf779f7bb7b8 *NAMESPACE
 59446402966817a7bc6e4cf4f57d9c39 *R/autoenc_adv_e.R
 1bcf9a85a101f075e7768abc7b5b756b *R/autoenc_adv_ed.R
 7e2dfda90b07000c61d267c73d31e52f *R/autoenc_conv_e.R
@@ -29,6 +29,8 @@ bc432bf2df87f230fae0173e66f7cb74 *R/skcla_mlp.R
 63a4bc05ff103ef67563ef3fe5294c29 *R/skcla_nb.R
 9eddd21bd848086699da41f932295c6b *R/skcla_rf.R
 0f11a57f3e56b1af61c37d8c798a375b *R/skcla_svc.R
+972a1fa0bfc9bc30130effabdad3837e *R/ts_conv1d.R
+f7d35963a8b173448a468dfc867b5916 *R/ts_lstm.R
 2ffb701d3140b12eb5562cbdc2b8b1c3 *README.md
 342241aa20c32921ffc623eb46487e2c *inst/logo.png
 acc6005ce5b9533fb2ebf9a8670a0bfd *inst/logo.pptx
@@ -93,3 +95,5 @@ a1a63913545db3578c9f1fa4501f13a5 *man/skcla_knn.Rd
 9a8ed8df5dae2791bca42adec4431c69 *man/skcla_nb.Rd
 574474092a3d918c6678b9d9514bfba1 *man/skcla_rf.Rd
 637f9f4bdeb807c3489c93d967ecc31e *man/skcla_svc.Rd
+1188c693dfa592fdf37c00c7db8c3217 *man/ts_conv1d.Rd
+97e853b75b9102c2a14373775cc2d0c0 *man/ts_lstm.Rd
