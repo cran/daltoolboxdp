@@ -1,15 +1,26 @@
 #'@title Subsampling
-#'@description Subsampling balances the class distribution of a dataset by reducing the representation of the majority class in the dataset.
-#'@param attribute The class attribute to target balancing using subsampling
-#'@return A `bal_subsampling` object.
-#'@examples
-#'data(iris)
-#'mod_iris <- iris[c(1:50,51:71,101:111),]
+#'@description Subsampling balances class distributions by reducing the representation
+#' of majority classes through random under-sampling.
 #'
-#'bal <- bal_subsampling('Species')
+#'@param attribute Character. Name of the target class attribute to balance.
+#'@return A `bal_subsampling` object.
+#'
+#'@references
+#' Kubat, M., & Matwin, S. (1997). Addressing the Curse of Imbalanced Training Sets: One-Sided Selection.
+#' Drummond, C., & Holte, R. (2003). C4.5, Class Imbalance, and Cost Sensitivity.
+#'
+#'@examples
+#'\dontrun{
+#'set.seed(123)
+#'data(iris)
+#'mod_iris <- iris[c(1:50, 51:71, 101:111), ]   # induce imbalance
+#'table(mod_iris$Species)
+#'
+#'bal <- bal_subsampling('Species')              # random under-sampling
 #'bal <- daltoolbox::fit(bal, mod_iris)
 #'adjust_iris <- daltoolbox::transform(bal, mod_iris)
-#'table(adjust_iris$Species)
+#'table(adjust_iris$Species)                     # all classes at minority count
+#'}
 #'@importFrom daltoolbox dal_transform
 #'@importFrom daltoolbox fit
 #'@importFrom daltoolbox transform
@@ -24,6 +35,7 @@ bal_subsampling <- function(attribute) {
 #'@importFrom daltoolbox transform
 #'@export
 transform.bal_subsampling <- function(obj, data, ...) {
+  # Randomly downsample each class to match the minority count
   data <- data
   attribute <- obj$attribute
   x <- sort((table(data[,attribute])))

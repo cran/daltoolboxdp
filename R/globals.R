@@ -1,4 +1,8 @@
-# Declare global functions used in package
+# globals.R
+
+# Declara símbolos externos resolvidos em tempo de execução (ex.: entradas Python
+# carregadas via `reticulate`) para suprimir NOTES de globais indefinidos no R CMD check.
+
 utils::globalVariables(c(
   "ts_lstm_create", "ts_lstm_fit", "ts_lstm_predict",
   "ts_conv1d_create","ts_conv1d_fit", "ts_conv1d_predict",
@@ -15,13 +19,13 @@ utils::globalVariables(c(
   "skcla_mlp_create", "skcla_mlp_fit", "skcla_mlp_predict",
   "skcla_nb_create", "skcla_nb_fit", "skcla_nb_predict",
   "skcla_svc_create", "skcla_svc_fit", "skcla_svc_predict",
-  # newly added entries to suppress check notes
+  # recém-adicionados para suprimir NOTES
   "create_lg_model", "create_rf_model", "fs_create", "fit_transform", "inbalanced_create_model",
-  # newly added for IMB functions
+  # IMB
   "create_imb_smote_model", "fit_imb_resample_smote",
   "create_imb_smotetomek_model", "fit_imb_resample_smotetomek",
   "create_imb_tomek_model", "fit_imb_resample_tomek",
-  # newly added for FE functions
+  # FE
   "create_fe_variance_threshold_model", "fit_transform_fe_variance_threshold",
   "create_fe_selectkbest_model", "fit_transform_fe_selectkbest",
   "create_fe_rf_model", "create_fe_selectfrommodel_rf", "fit_transform_fe_selectfrommodel_rf",
@@ -30,6 +34,3 @@ utils::globalVariables(c(
   "create_fe_sequential_fs_model", "fit_transform_fe_sequential_fs",
   "create_fe_rfe_model", "fit_transform_fe_rfe"
 ))
-
-#"adjust_class_label", "adjust_data.frame", 
-#"ts_regsw", "sample_random"

@@ -1,6 +1,6 @@
 Package: daltoolboxdp
 Title: Python-Based Extensions for Data Analytics Workflows
-Version: 1.2.727
+Version: 1.2.737
 Authors@R: 
   c(    person(given = "Eduardo", family = "Ogasawara", role = c("aut", "ths", "cre"), 
                email = "eogasawara@ieee.org", comment = c(ORCID = "0000-0002-0466-0626")),
@@ -28,7 +28,7 @@ URL: https://cefet-rj-dal.github.io/daltoolboxdp/,
         https://github.com/cefet-rj-dal/daltoolboxdp
 BugReports: https://github.com/cefet-rj-dal/daltoolboxdp/issues
 Encoding: UTF-8
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Depends: R (>= 4.1.0)
 Imports: tspredit, daltoolbox, leaps, FSelector, doBy, glmnet,
         smotefamily, reticulate, stats
@@ -37,7 +37,7 @@ Config/reticulate: list( packages = list( list(package = "scipy"),
         = "numpy"), list(package = "matplotlib"), list(package =
         "scikit-learn") ) )
 NeedsCompilation: no
-Packaged: 2025-06-29 11:44:38 UTC; gpca
+Packaged: 2025-10-27 04:45:45 UTC; gpca
 Author: Eduardo Ogasawara [aut, ths, cre] (ORCID:
     <https://orcid.org/0000-0002-0466-0626>),
   Diego Salles [aut],
@@ -47,4 +47,4 @@ Author: Eduardo Ogasawara [aut, ths, cre] (ORCID:
   CEFET/RJ [cph]
 Maintainer: Eduardo Ogasawara <eogasawara@ieee.org>
 Repository: CRAN
-Date/Publication: 2025-06-29 12:10:09 UTC
+Date/Publication: 2025-10-27 05:20:02 UTC

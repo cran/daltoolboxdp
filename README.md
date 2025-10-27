@@ -33,6 +33,17 @@ al. (2009)](https://doi.org/10.1007/978-3-642-02279-1_20).
 
 ------------------------------------------------------------------------
 
+# Examples
+
+Example scripts are available at:
+
+- [Examples](https://github.com/cefet-rj-dal/daltoolboxdp/tree/main/examples)
+- [Autoenconders](https://github.com/cefet-rj-dal/daltoolboxdp/tree/main/autoencoder)
+- [Time
+  Series](https://github.com/cefet-rj-dal/daltoolboxdp/tree/main/timeseries)
+
+------------------------------------------------------------------------
+
 # Installation
 
 You can install the latest stable version from CRAN:
@@ -46,31 +57,6 @@ To install the development version from GitHub:
 ``` r
 library(devtools)
 devtools::install_github("cefet-rj-dal/daltoolboxdp", force = TRUE, dependencies = FALSE, upgrade = "never")
-```
-
-------------------------------------------------------------------------
-
-# Examples
-
-Example scripts are available at:
-
-- [Examples](https://github.com/cefet-rj-dal/daltoolboxdp/tree/main/examples)
-- [Autoenconders](https://github.com/cefet-rj-dal/daltoolboxdp/tree/main/autoencoder)
-- [Time
-  Series](https://github.com/cefet-rj-dal/daltoolboxdp/tree/main/timeseries)
-
-``` r
-library(daltoolboxdp)
-#> Registered S3 method overwritten by 'quantmod':
-#>   method            from
-#>   as.zoo.data.frame zoo
-#> Registered S3 methods overwritten by 'forecast':
-#>   method  from 
-#>   head.ts stats
-#>   tail.ts stats
-
-# Example usage (replace with actual function when available)
-# e.g., data <- my_sampler_function(data, method = "undersample")
 ```
 
 ------------------------------------------------------------------------
