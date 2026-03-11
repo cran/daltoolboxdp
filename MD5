@@ -1,6 +1,6 @@
-8804d6905c695e3bb66caafea4d3991c *DESCRIPTION
+aedd3e70eebf85dfbc374c0401e2ea61 *DESCRIPTION
 70f9ea80603794826e1a2a8ad0b4b593 *LICENSE
-c5adc9cdc3db6141e3b2bf779f7bb7b8 *NAMESPACE
+cff4a62f36939e730e06a1c242476f7a *NAMESPACE
 fb73150fc8faea82a6b775957a9d2291 *R/autoenc_adv_e.R
 c91c290593adcd1aa5c4e31ed3c0a761 *R/autoenc_adv_ed.R
 7ab0aaccb9113b34884b71249f2b175a *R/autoenc_conv_e.R
@@ -15,14 +15,7 @@ bec66020bb3512369fc05ef2f3cd7650 *R/autoenc_lstm_ed.R
 a07dbf74c907c2dc4999837172986d66 *R/autoenc_stacked_ed.R
 45002cf71a1debf4f736bc7a4752d230 *R/autoenc_variational_e.R
 83429ae4a93a9d7d47a9eb3dc19457bd *R/autoenc_variational_ed.R
-669364a2c3cf2e8a2094c9532ffe64a3 *R/bal_oversampling.R
-87dba90e4a9abb3bb5f2a3e7c1bcdd99 *R/bal_subsampling.R
-d94239fa1cd6a843bd53a1739d0b0203 *R/fs.R
-dcd6e6fa4d35faef2c75281022a987c7 *R/fs_fss.R
-b56b63561c92229dff3c7ee673126b92 *R/fs_ig.R
-f76e689e3dd58db34634d9f20c05225a *R/fs_lasso.R
-e3d3bd5511f69c23a023cc7c52e3bef3 *R/fs_relief.R
-5aca6dc744252a40f026c4e4cb3f1cf1 *R/globals.R
+b20713b9f1497f2f3f8b0c078bed7cf0 *R/globals.R
 115ec5546c21b2149a8133ef337cb51d *R/skcla_gb.R
 9929de7ee5f24cfbf071853908d5cc7b *R/skcla_knn.R
 1dd3b6bd50d683dc45b25ab8b8997619 *R/skcla_mlp.R
@@ -31,7 +24,7 @@ e3d3bd5511f69c23a023cc7c52e3bef3 *R/fs_relief.R
 a60a0c3f0dd8ffe7c8ae01fb332ef6f0 *R/skcla_svc.R
 3316caa9b1d9dea1c7f5c1540e3a138a *R/ts_conv1d.R
 abd7b35a0c6f1f381fc2081a5c377634 *R/ts_lstm.R
-67ba173946c76fed5aa9128b4d356e3b *README.md
+bbedeb183742127c9a5e32793a0dd550 *README.md
 342241aa20c32921ffc623eb46487e2c *inst/logo.png
 acc6005ce5b9533fb2ebf9a8670a0bfd *inst/logo.pptx
 b8e3ada210f3298761f3d4c2f9472c21 *inst/python/autoenc.py
@@ -66,13 +59,6 @@ fba6136dcdd149a41a8ac3688cf4d340 *man/autoenc_stacked_e.Rd
 dd34b97dd1434b5a55e7764dd0a63b0a *man/autoenc_stacked_ed.Rd
 d86206a4d7e9211cb9a429c9eb25ba99 *man/autoenc_variational_e.Rd
 aead775a2006d3b90a63e66579321b6f *man/autoenc_variational_ed.Rd
-899b87deb757ce33fbe894c6bc16366c *man/bal_oversampling.Rd
-3083240e4b7ea6d45dad49f7e811bf2a *man/bal_subsampling.Rd
-7c8c6c52ae1e54a1da8379a2a53fdbcd *man/fs.Rd
-f59b2dc730fb0e4516c5bf14220430ca *man/fs_fss.Rd
-50c666c37c8a2be004a3b2c6d99ace7f *man/fs_ig.Rd
-d1fdec172336785186cb9fbc4bcbc9d6 *man/fs_lasso.Rd
-343dd5736d6daef60bc6c7231005ba18 *man/fs_relief.Rd
 1aa640b8fd0d7f96a92f341502b074f3 *man/skcla_gb.Rd
 b6440e9021d8edbcc9d3d66b58cd2684 *man/skcla_knn.Rd
 2ac422f58a48f3dfb1e7dc3f2f0e2fa8 *man/skcla_mlp.Rd
