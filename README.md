@@ -19,8 +19,7 @@ It currently focuses on:
 - Deep learning models backed by `torch`
 - Scikit-learn classifiers exposed through the `daltoolbox` API
 - Time-series forecasting models backed by Python
-- Integration of Python model objects into the `daltoolbox`
-  architecture
+- Integration of Python model objects into the `daltoolbox` architecture
 
 These capabilities rely on the `reticulate` bridge, so the package can
 keep the object and workflow conventions of `daltoolbox` while
@@ -38,8 +37,8 @@ al. (2009)](https://doi.org/10.1007/978-3-642-02279-1_20).
 
 Example scripts are available at:
 
-- [Classification](https://github.com/cefet-rj-dal/daltoolboxdp/tree/main/examples/classification)
 - [Autoencoders](https://github.com/cefet-rj-dal/daltoolboxdp/tree/main/examples/autoencoder)
+- [Classification](https://github.com/cefet-rj-dal/daltoolboxdp/tree/main/examples/classification)
 - [Time
   Series](https://github.com/cefet-rj-dal/daltoolboxdp/tree/main/examples/timeseries)
 

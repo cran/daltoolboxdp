@@ -1,6 +1,6 @@
 Package: daltoolboxdp
 Title: Deep Python Extensions for 'daltoolbox'
-Version: 1.2.747
+Version: 1.2.767
 Authors@R: 
   c(    person(given = "Eduardo", family = "Ogasawara", role = c("aut", "ths", "cre"), 
                email = "eogasawara@ieee.org", comment = c(ORCID = "0000-0002-0466-0626")),
@@ -24,15 +24,17 @@ URL: https://cefet-rj-dal.github.io/daltoolboxdp/,
         https://github.com/cefet-rj-dal/daltoolboxdp
 BugReports: https://github.com/cefet-rj-dal/daltoolboxdp/issues
 Encoding: UTF-8
-RoxygenNote: 7.3.3
+RoxygenNote: 8.0.0
 Depends: R (>= 4.1.0)
 Imports: tspredit, daltoolbox, reticulate
+Suggests: testthat (>= 3.0.0)
+Config/testthat/edition: 3
 Config/reticulate: list( packages = list( list(package = "scipy"),
         list(package = "torch"), list(package = "pandas"), list(package
         = "numpy"), list(package = "matplotlib"), list(package =
         "scikit-learn") ) )
 NeedsCompilation: no
-Packaged: 2026-03-10 20:40:20 UTC; gpca
+Packaged: 2026-05-06 02:12:56 UTC; gpca
 Author: Eduardo Ogasawara [aut, ths, cre] (ORCID:
     <https://orcid.org/0000-0002-0466-0626>),
   Diego Salles [aut],
@@ -42,4 +44,4 @@ Author: Eduardo Ogasawara [aut, ths, cre] (ORCID:
   CEFET/RJ [cph]
 Maintainer: Eduardo Ogasawara <eogasawara@ieee.org>
 Repository: CRAN
-Date/Publication: 2026-03-11 00:20:22 UTC
+Date/Publication: 2026-05-06 04:00:02 UTC
