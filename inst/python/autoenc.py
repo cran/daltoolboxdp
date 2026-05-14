@@ -10,21 +10,37 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
 
-from autoenc_common import AutoencTrainingConfig, StopController, split_indices, validate_strategy
+from autoenc_common import AutoencTrainingConfig, StopController, build_dense_stack, split_indices, validate_strategy
 
 
 class Autoencoder(nn.Module):
-    def __init__(self, input_size: int, encoding_size: int):
+    def __init__(
+        self,
+        input_size: int,
+        encoding_size: int,
+        encoder_hidden_sizes=None,
+        decoder_hidden_sizes=None,
+        activation: str = "relu",
+        output_activation: str = "none",
+        negative_slope: float = 0.2,
+    ):
         super().__init__()
-        self.encoder = nn.Sequential(
-            nn.Linear(int(input_size), 64),
-            nn.ReLU(inplace=True),
-            nn.Linear(64, int(encoding_size)),
+        encoder_hidden_sizes = [64] if encoder_hidden_sizes is None else encoder_hidden_sizes
+        decoder_hidden_sizes = list(reversed(list(encoder_hidden_sizes))) if decoder_hidden_sizes is None else decoder_hidden_sizes
+        self.encoder = build_dense_stack(
+            int(input_size),
+            encoder_hidden_sizes,
+            int(encoding_size),
+            activation=activation,
+            negative_slope=negative_slope,
         )
-        self.decoder = nn.Sequential(
-            nn.Linear(int(encoding_size), 64),
-            nn.ReLU(inplace=True),
-            nn.Linear(64, int(input_size)),
+        self.decoder = build_dense_stack(
+            int(encoding_size),
+            decoder_hidden_sizes,
+            int(input_size),
+            activation=activation,
+            output_activation=output_activation,
+            negative_slope=negative_slope,
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -32,9 +48,28 @@ class Autoencoder(nn.Module):
 
 
 class DenseAutoencoderModel:
-    def __init__(self, input_size: int, encoding_size: int, validation_strategy: str = "static", stopping_rule: str = "none"):
+    def __init__(
+        self,
+        input_size: int,
+        encoding_size: int,
+        encoder_hidden_sizes=None,
+        decoder_hidden_sizes=None,
+        activation: str = "relu",
+        output_activation: str = "none",
+        negative_slope: float = 0.2,
+        validation_strategy: str = "static",
+        stopping_rule: str = "none",
+    ):
         self.validation_strategy, self.stopping_rule = validate_strategy(validation_strategy, stopping_rule)
-        self.model = Autoencoder(int(input_size), int(encoding_size)).float()
+        self.model = Autoencoder(
+            int(input_size),
+            int(encoding_size),
+            encoder_hidden_sizes=encoder_hidden_sizes,
+            decoder_hidden_sizes=decoder_hidden_sizes,
+            activation=activation,
+            output_activation=output_activation,
+            negative_slope=float(negative_slope),
+        ).float()
         self.train_loss: List[float] = []
         self.val_loss: List[float] = []
         self.epochs_done: int = 0
@@ -67,9 +102,6 @@ class DenseAutoencoderModel:
         return float(np.mean(losses)) if losses else 0.0
 
     def fit(self, data, config: AutoencTrainingConfig):
-        if config.seed is not None:
-            np.random.seed(int(config.seed))
-            torch.manual_seed(int(config.seed))
 
         array = self._array(data)
         criterion = nn.MSELoss()
@@ -81,7 +113,7 @@ class DenseAutoencoderModel:
         self.epochs_done = 0
 
         if self.validation_strategy == "static" and self.stopping_rule != "none":
-            train_idx, val_idx = split_indices(array.shape[0], config.val_ratio, config.seed)
+            train_idx, val_idx = split_indices(array.shape[0], config.val_ratio)
             train_loader = self._loader(array[train_idx], config.batch_size, True)
             val_loader = self._loader(array[val_idx], config.batch_size, False)
         elif self.validation_strategy == "static":
@@ -94,7 +126,7 @@ class DenseAutoencoderModel:
         for epoch in range(int(config.num_epochs)):
             self.epochs_done += 1
             if self.validation_strategy == "dynamic":
-                train_idx, val_idx = split_indices(array.shape[0], config.val_ratio, None if config.seed is None else int(config.seed) + epoch)
+                train_idx, val_idx = split_indices(array.shape[0], config.val_ratio)
                 train_loader = self._loader(array[train_idx], config.batch_size, True)
                 val_loader = self._loader(array[val_idx], config.batch_size, False)
 
@@ -130,8 +162,28 @@ class DenseAutoencoderModel:
         return np.concatenate(decoded, axis=0)
 
 
-def autoenc_create(input_size, encoding_size, validation_strategy="static", stopping_rule="none"):
-    return DenseAutoencoderModel(input_size, encoding_size, validation_strategy=validation_strategy, stopping_rule=stopping_rule)
+def autoenc_create(
+    input_size,
+    encoding_size,
+    encoder_hidden_sizes=None,
+    decoder_hidden_sizes=None,
+    activation="relu",
+    output_activation="none",
+    negative_slope=0.2,
+    validation_strategy="static",
+    stopping_rule="none",
+):
+    return DenseAutoencoderModel(
+        input_size,
+        encoding_size,
+        encoder_hidden_sizes=encoder_hidden_sizes,
+        decoder_hidden_sizes=decoder_hidden_sizes,
+        activation=activation,
+        output_activation=output_activation,
+        negative_slope=negative_slope,
+        validation_strategy=validation_strategy,
+        stopping_rule=stopping_rule,
+    )
 
 
 def autoenc_fit(
@@ -149,7 +201,6 @@ def autoenc_fit(
     ema_alpha=0.2,
     test_window=30,
     p_value=0.05,
-    seed=42,
 ):
     autoencoder.validation_strategy, autoencoder.stopping_rule = validate_strategy(validation_strategy, stopping_rule)
     config = AutoencTrainingConfig(
@@ -165,7 +216,6 @@ def autoenc_fit(
         ema_alpha=float(ema_alpha),
         test_window=int(test_window),
         p_value=float(p_value),
-        seed=None if seed is None else int(seed),
     )
     autoencoder.fit(data, config)
     return autoencoder, np.array(autoencoder.train_loss), np.array(autoencoder.val_loss)

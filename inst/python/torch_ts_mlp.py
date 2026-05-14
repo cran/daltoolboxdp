@@ -1,5 +1,5 @@
 """
-Unified PyTorch MLP regressor used by daltoolboxdp via reticulate.
+Unified PyTorch MLP forecaster for daltoolboxdp via reticulate.
 """
 
 from dataclasses import dataclass
@@ -22,7 +22,7 @@ class _TrainingConfig:
     epochs: int = 100
     lr: float = 0.001
     val_ratio: float = 0.2
-    batch_size: int = 64
+    batch_size: int = 32
     patience: int = 100
     min_delta: float = 1e-4
     sma_window: int = 5
@@ -91,7 +91,7 @@ def _apply_init(module: nn.Module, init_method: str):
             nn.init.zeros_(module.bias)
 
 
-class TorchMLPRegressorNet(nn.Module):
+class TorchTsMLPNet(nn.Module):
     def __init__(
         self,
         input_dim: int,
@@ -193,7 +193,7 @@ class _StopController:
         return self.patience_ctr >= self.patience
 
 
-class TorchMLPRegressor:
+class TorchTsMLPModel:
     def __init__(
         self,
         input_dim: int,
@@ -214,7 +214,7 @@ class TorchMLPRegressor:
             raise ValueError(f"stopping_rule must be one of {sorted(STOPPING_RULES)}")
         self.validation_strategy = validation_strategy
         self.stopping_rule = stopping_rule
-        self.network = TorchMLPRegressorNet(
+        self.network = TorchTsMLPNet(
             input_dim,
             hidden_sizes,
             dropout=dropout,
@@ -232,9 +232,9 @@ class TorchMLPRegressor:
         return torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     @staticmethod
-    def _prep_xy(df: pd.DataFrame, target_col: str) -> Tuple[torch.Tensor, torch.Tensor]:
-        X = df.drop(columns=[target_col]).to_numpy().astype(np.float32)
-        y = df[target_col].to_numpy().astype(np.float32)
+    def _prep_xy(df: pd.DataFrame) -> Tuple[torch.Tensor, torch.Tensor]:
+        X = df.drop(columns=["t0"]).to_numpy().astype(np.float32)
+        y = df["t0"].to_numpy().astype(np.float32)
         return torch.from_numpy(X), torch.from_numpy(y).unsqueeze(-1)
 
     @staticmethod
@@ -244,6 +244,12 @@ class TorchMLPRegressor:
         rng.shuffle(idx)
         n_val = max(1, int(n_samples * float(val_ratio)))
         return idx[n_val:], idx[:n_val]
+
+    @staticmethod
+    def _static_split_indices(n_samples: int, val_ratio: float) -> Tuple[np.ndarray, np.ndarray]:
+        n_val = max(1, int(n_samples * float(val_ratio)))
+        idx = np.arange(n_samples)
+        return idx[:-n_val], idx[-n_val:]
 
     def _epoch(self, loader: DataLoader, optimizer: Optional[torch.optim.Optimizer], criterion: nn.Module) -> float:
         losses: List[float] = []
@@ -266,9 +272,9 @@ class TorchMLPRegressor:
                 losses.append(float(loss.item()))
         return float(np.mean(losses)) if losses else 0.0
 
-    def fit(self, df_train: pd.DataFrame, target_col: str, config: _TrainingConfig):
+    def fit(self, df_train: pd.DataFrame, config: _TrainingConfig):
 
-        X_all, y_all = self._prep_xy(df_train, target_col)
+        X_all, y_all = self._prep_xy(df_train)
         criterion = nn.MSELoss()
         optimizer = torch.optim.Adam(self.network.parameters(), lr=float(config.lr))
         stopper = _StopController(self.stopping_rule, config.min_delta, config.patience, config.sma_window, config.ema_alpha, config.test_window, config.p_value)
@@ -278,7 +284,7 @@ class TorchMLPRegressor:
         self.epochs_done = 0
 
         if self.validation_strategy == "static" and self.stopping_rule != "none":
-            train_idx, val_idx = self._split_indices(X_all.shape[0], config.val_ratio)
+            train_idx, val_idx = self._static_split_indices(X_all.shape[0], config.val_ratio)
             train_loader = DataLoader(TensorDataset(X_all[train_idx], y_all[train_idx]), batch_size=int(config.batch_size), shuffle=True, drop_last=False)
             val_loader = DataLoader(TensorDataset(X_all[val_idx], y_all[val_idx]), batch_size=int(config.batch_size), shuffle=False, drop_last=False)
         elif self.validation_strategy == "static":
@@ -306,8 +312,8 @@ class TorchMLPRegressor:
             self.network.load_state_dict(stopper.best_state)
         return self
 
-    def predict(self, df_test: pd.DataFrame, target_col: str, batch_size: int = 128):
-        X = df_test.drop(columns=[target_col], errors="ignore").to_numpy().astype(np.float32)
+    def predict(self, df_test: pd.DataFrame, batch_size: int = 128):
+        X = df_test.drop(columns=["t0"], errors="ignore").to_numpy().astype(np.float32)
         loader = DataLoader(TensorDataset(torch.from_numpy(X), torch.zeros(X.shape[0], 1)), batch_size=int(batch_size), shuffle=False, drop_last=False)
         preds: List[torch.Tensor] = []
         self.network.eval()
@@ -317,7 +323,7 @@ class TorchMLPRegressor:
         return torch.vstack(preds).squeeze(-1).numpy()
 
 
-def torch_reg_mlp_create(
+def torch_ts_mlp_create(
     input_dim: int,
     hidden_sizes: List[int],
     dropout: float = 0.0,
@@ -328,7 +334,7 @@ def torch_reg_mlp_create(
     validation_strategy: str = "static",
     stopping_rule: str = "none",
 ):
-    return TorchMLPRegressor(
+    return TorchTsMLPModel(
         input_dim,
         hidden_sizes,
         dropout=dropout,
@@ -341,16 +347,15 @@ def torch_reg_mlp_create(
     )
 
 
-def torch_reg_mlp_fit(
+def torch_ts_mlp_fit(
     model,
     df_train: pd.DataFrame,
-    target_col: str = "t0",
     epochs: int = 100,
     lr: float = 1e-3,
     validation_strategy: str = "static",
     stopping_rule: str = "none",
     val_ratio: float = 0.2,
-    batch_size: int = 64,
+    batch_size: int = 32,
     patience: int = 100,
     min_delta: float = 1e-4,
     sma_window: int = 5,
@@ -372,8 +377,8 @@ def torch_reg_mlp_fit(
         test_window=int(test_window),
         p_value=float(p_value),
     )
-    return model.fit(df_train, target_col=target_col, config=config)
+    return model.fit(df_train, config)
 
 
-def torch_reg_mlp_predict(model, df_test: pd.DataFrame, target_col: str = "t0", batch_size: int = 128):
-    return model.predict(df_test, target_col=target_col, batch_size=batch_size)
+def torch_ts_mlp_predict(model, df_test: pd.DataFrame, batch_size: int = 128):
+    return model.predict(df_test, batch_size=batch_size)

@@ -5,23 +5,18 @@ R entry points (see R/skcla_knn.R):
   - skcla_knn_create(...hyperparams...) -> sklearn model
   - skcla_knn_fit(model, df_train, target_column) -> fitted model
   - skcla_knn_predict(model, df_test) -> list of labels
+  - skcla_knn_predict_proba(model, df_test) -> list of per-class probabilities
 """
 
 from sklearn.neighbors import KNeighborsClassifier
 import numpy as np
 import pandas as pd
 
-def skcla_knn_create(n_neighbors=5, weights='uniform', algorithm='auto', leaf_size=30, 
-               p=2, metric='minkowski', metric_params=None, n_jobs=None):
+def skcla_knn_create(n_neighbors=5, weights='uniform', metric='euclidean'):
     model = KNeighborsClassifier(
         n_neighbors=n_neighbors,
         weights=weights,
-        algorithm=algorithm,
-        leaf_size=leaf_size,
-        p=p,
-        metric=metric,
-        metric_params=metric_params,
-        n_jobs=n_jobs
+        metric=metric
     )
     return model
 
@@ -64,4 +59,21 @@ def skcla_knn_predict(model, df_test):
         return []
     except Exception as e:
         print(f"Error in skcla_knn_predict: {e}")
+        return []
+
+def skcla_knn_predict_proba(model, df_test):
+    """Predict class probabilities as a nested list to simplify R interop."""
+    try:
+        df_test = pd.DataFrame(df_test)
+
+        if df_test.isnull().values.any():
+            df_test = df_test.fillna(0)
+
+        probabilities = model.predict_proba(df_test)
+        return probabilities.tolist()
+    except TypeError as e:
+        print(f"TypeError in skcla_knn_predict_proba: {e}")
+        return []
+    except Exception as e:
+        print(f"Error in skcla_knn_predict_proba: {e}")
         return []

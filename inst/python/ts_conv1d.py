@@ -34,26 +34,77 @@ class _TrainingConfig:
     ema_alpha: float = 0.2
     test_window: int = 30
     p_value: float = 0.05
-    seed: Optional[int] = 42
+
+
+def _as_int_list(values, default):
+    if values is None:
+        values = default
+    if isinstance(values, (int, np.integer)):
+        return [int(values)]
+    return [int(v) for v in values]
+
+
+def _activation(name: str) -> nn.Module:
+    name = str(name).lower()
+    if name == "relu":
+        return nn.ReLU(inplace=True)
+    if name == "leaky_relu":
+        return nn.LeakyReLU(0.2, inplace=True)
+    if name == "elu":
+        return nn.ELU(inplace=True)
+    if name == "gelu":
+        return nn.GELU()
+    if name == "tanh":
+        return nn.Tanh()
+    raise ValueError(f"Unsupported activation: {name}")
 
 
 class TsConv1DNet(nn.Module):
-    def __init__(self, in_channels: int, input_dim: int):
+    def __init__(
+        self,
+        in_channels: int,
+        sequence_length: int,
+        conv_channels=None,
+        kernel_sizes=None,
+        strides=None,
+        pooling: str = "none",
+        pool_kernel_size: int = 2,
+        dense_hidden_sizes=None,
+        activation: str = "relu",
+    ):
         super().__init__()
-        kernel_size = 1 if int(input_dim) == 1 else 2
-        self.feature_extractor = nn.Sequential(
-            nn.Conv1d(in_channels=int(in_channels), out_channels=64, kernel_size=kernel_size),
-            nn.ReLU(inplace=True),
-        )
+        conv_channels = _as_int_list(conv_channels, default=[64])
+        kernel_sizes = _as_int_list(kernel_sizes, default=[1 if int(sequence_length) == 1 else 2] * len(conv_channels))
+        strides = _as_int_list(strides, default=[1] * len(conv_channels))
+        dense_hidden_sizes = _as_int_list(dense_hidden_sizes, default=[50])
+        if not (len(conv_channels) == len(kernel_sizes) == len(strides)):
+            raise ValueError("conv_channels, kernel_sizes and strides must have the same length.")
+
+        layers = []
+        prev_channels = int(in_channels)
+        for out_channels, kernel_size, stride in zip(conv_channels, kernel_sizes, strides):
+            layers.append(nn.Conv1d(prev_channels, int(out_channels), kernel_size=int(kernel_size), stride=int(stride)))
+            layers.append(_activation(activation))
+            if str(pooling).lower() == "max":
+                layers.append(nn.MaxPool1d(kernel_size=int(pool_kernel_size)))
+            elif str(pooling).lower() == "avg":
+                layers.append(nn.AvgPool1d(kernel_size=int(pool_kernel_size)))
+            elif str(pooling).lower() != "none":
+                raise ValueError("pooling must be one of {'none', 'max', 'avg'}")
+            prev_channels = int(out_channels)
+        self.feature_extractor = nn.Sequential(*layers)
         with torch.no_grad():
-            dummy = torch.rand(1, int(in_channels), int(input_dim))
-            n_features = int(np.prod(self.feature_extractor(dummy).shape[1:]))
-        self.regressor = nn.Sequential(
-            nn.Flatten(1, -1),
-            nn.Linear(n_features, 50),
-            nn.ReLU(inplace=True),
-            nn.Linear(50, 1),
-        )
+            dummy = torch.rand(1, int(in_channels), int(sequence_length))
+            features = self.feature_extractor(dummy)
+            n_features = int(np.prod(features.shape[1:]))
+        head = [nn.Flatten(1, -1)]
+        prev_features = n_features
+        for hidden_size in dense_hidden_sizes:
+            head.append(nn.Linear(prev_features, int(hidden_size)))
+            head.append(_activation(activation))
+            prev_features = int(hidden_size)
+        head.append(nn.Linear(prev_features, 1))
+        self.regressor = nn.Sequential(*head)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.regressor(self.feature_extractor(x))
@@ -132,7 +183,21 @@ class _StopController:
 
 
 class TsConv1DModel:
-    def __init__(self, in_channels: int, input_dim: int, validation_strategy: str = "static", stopping_rule: str = "none"):
+    def __init__(
+        self,
+        in_channels: int,
+        input_dim: int,
+        sequence_length: Optional[int] = None,
+        conv_channels=None,
+        kernel_sizes=None,
+        strides=None,
+        pooling: str = "none",
+        pool_kernel_size: int = 2,
+        dense_hidden_sizes=None,
+        activation: str = "relu",
+        validation_strategy: str = "static",
+        stopping_rule: str = "none",
+    ):
         validation_strategy = str(validation_strategy).lower()
         stopping_rule = str(stopping_rule).lower()
         if validation_strategy not in VALIDATION_STRATEGIES:
@@ -142,7 +207,20 @@ class TsConv1DModel:
 
         self.validation_strategy = validation_strategy
         self.stopping_rule = stopping_rule
-        self.network = TsConv1DNet(int(in_channels), int(input_dim)).to(self._device())
+        self.in_channels = int(in_channels)
+        self.input_dim = int(input_dim)
+        self.sequence_length = self._resolve_sequence_length(self.input_dim, self.in_channels, sequence_length)
+        self.network = TsConv1DNet(
+            self.in_channels,
+            self.sequence_length,
+            conv_channels=conv_channels,
+            kernel_sizes=kernel_sizes,
+            strides=strides,
+            pooling=pooling,
+            pool_kernel_size=pool_kernel_size,
+            dense_hidden_sizes=dense_hidden_sizes,
+            activation=activation,
+        ).to(self._device())
         self.train_loss_hist: List[float] = []
         self.val_loss_hist: List[float] = []
         self.epochs_done: int = 0
@@ -152,10 +230,26 @@ class TsConv1DModel:
         return torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     @staticmethod
-    def _prepare_xy(df: pd.DataFrame) -> Tuple[torch.Tensor, torch.Tensor]:
+    def _resolve_sequence_length(input_dim: int, in_channels: int, sequence_length: Optional[int]) -> int:
+        if sequence_length is not None:
+            sequence_length = int(sequence_length)
+        else:
+            if int(input_dim) % int(in_channels) != 0:
+                raise ValueError("input_dim must be divisible by in_channels when sequence_length is not provided.")
+            sequence_length = int(input_dim) // int(in_channels)
+        if int(in_channels) * int(sequence_length) != int(input_dim):
+            raise ValueError("input_dim must equal in_channels * sequence_length.")
+        return int(sequence_length)
+
+    def _reshape_inputs(self, X: np.ndarray) -> torch.Tensor:
+        if X.shape[1] != self.input_dim:
+            raise ValueError(f"Expected {self.input_dim} input features, got {X.shape[1]}.")
+        return torch.from_numpy(X).reshape(X.shape[0], self.in_channels, self.sequence_length)
+
+    def _prepare_xy(self, df: pd.DataFrame) -> Tuple[torch.Tensor, torch.Tensor]:
         X = df.drop(columns=["t0"]).to_numpy().astype(np.float32)
         y = df["t0"].to_numpy().astype(np.float32)
-        X = torch.from_numpy(X).unsqueeze(1)
+        X = self._reshape_inputs(X)
         y = torch.from_numpy(y).unsqueeze(-1)
         return X, y
 
@@ -164,12 +258,18 @@ class TsConv1DModel:
         return DataLoader(TensorDataset(X, y), batch_size=int(batch_size), shuffle=shuffle, drop_last=False)
 
     @staticmethod
-    def _split_indices(n_samples: int, val_ratio: float, seed: Optional[int]) -> Tuple[np.ndarray, np.ndarray]:
-        rng = np.random.default_rng(seed)
+    def _split_indices(n_samples: int, val_ratio: float) -> Tuple[np.ndarray, np.ndarray]:
+        rng = np.random.default_rng()
         idx = np.arange(n_samples)
         rng.shuffle(idx)
         n_val = max(1, int(n_samples * float(val_ratio)))
         return idx[n_val:], idx[:n_val]
+
+    @staticmethod
+    def _static_split_indices(n_samples: int, val_ratio: float) -> Tuple[np.ndarray, np.ndarray]:
+        n_val = max(1, int(n_samples * float(val_ratio)))
+        idx = np.arange(n_samples)
+        return idx[:-n_val], idx[-n_val:]
 
     def _epoch(self, loader: DataLoader, optimizer: Optional[torch.optim.Optimizer], criterion: nn.Module) -> float:
         losses: List[float] = []
@@ -193,9 +293,6 @@ class TsConv1DModel:
         return float(np.mean(losses)) if losses else 0.0
 
     def fit(self, df_train: pd.DataFrame, config: _TrainingConfig):
-        if config.seed is not None:
-            np.random.seed(int(config.seed))
-            torch.manual_seed(int(config.seed))
 
         X_all, y_all = self._prepare_xy(df_train)
         criterion = nn.MSELoss()
@@ -215,7 +312,7 @@ class TsConv1DModel:
         self.epochs_done = 0
 
         if self.validation_strategy == "static" and self.stopping_rule != "none":
-            train_idx, val_idx = self._split_indices(X_all.shape[0], config.val_ratio, config.seed)
+            train_idx, val_idx = self._static_split_indices(X_all.shape[0], config.val_ratio)
             X_train, y_train = X_all[train_idx], y_all[train_idx]
             X_val, y_val = X_all[val_idx], y_all[val_idx]
             train_loader = self._make_loader(X_train, y_train, config.batch_size, True)
@@ -231,7 +328,7 @@ class TsConv1DModel:
             self.epochs_done += 1
 
             if self.validation_strategy == "dynamic":
-                train_idx, val_idx = self._split_indices(X_all.shape[0], config.val_ratio, None if config.seed is None else int(config.seed) + epoch)
+                train_idx, val_idx = self._split_indices(X_all.shape[0], config.val_ratio)
                 X_train, y_train = X_all[train_idx], y_all[train_idx]
                 X_val, y_val = X_all[val_idx], y_all[val_idx]
                 train_loader = self._make_loader(X_train, y_train, config.batch_size, True)
@@ -252,7 +349,7 @@ class TsConv1DModel:
 
     def predict(self, df_test: pd.DataFrame, batch_size: int = 8):
         X_test = df_test.drop(columns=["t0"], errors="ignore").to_numpy().astype(np.float32)
-        X_test = torch.from_numpy(X_test).unsqueeze(1)
+        X_test = self._reshape_inputs(X_test)
         loader = DataLoader(TensorDataset(X_test, torch.zeros(X_test.shape[0], 1)), batch_size=int(batch_size), shuffle=False, drop_last=False)
         preds: List[torch.Tensor] = []
         self.network.eval()
@@ -262,8 +359,21 @@ class TsConv1DModel:
         return torch.vstack(preds).squeeze(-1).numpy()
 
 
-def ts_conv1d_create(in_channels, input_dim, validation_strategy="static", stopping_rule="none"):
-    return TsConv1DModel(int(in_channels), int(input_dim), validation_strategy=validation_strategy, stopping_rule=stopping_rule)
+def ts_conv1d_create(in_channels, input_dim, sequence_length=None, conv_channels=None, kernel_sizes=None, strides=None, pooling="none", pool_kernel_size=2, dense_hidden_sizes=None, activation="relu", validation_strategy="static", stopping_rule="none"):
+    return TsConv1DModel(
+        int(in_channels),
+        int(input_dim),
+        sequence_length=sequence_length,
+        conv_channels=conv_channels,
+        kernel_sizes=kernel_sizes,
+        strides=strides,
+        pooling=pooling,
+        pool_kernel_size=pool_kernel_size,
+        dense_hidden_sizes=dense_hidden_sizes,
+        activation=activation,
+        validation_strategy=validation_strategy,
+        stopping_rule=stopping_rule,
+    )
 
 
 def ts_conv1d_fit(
@@ -281,7 +391,6 @@ def ts_conv1d_fit(
     ema_alpha=0.2,
     test_window=30,
     p_value=0.05,
-    seed=42,
 ):
     model.validation_strategy = str(validation_strategy).lower()
     model.stopping_rule = str(stopping_rule).lower()
@@ -296,7 +405,6 @@ def ts_conv1d_fit(
         ema_alpha=float(ema_alpha),
         test_window=int(test_window),
         p_value=float(p_value),
-        seed=None if seed is None else int(seed),
     )
     return model.fit(df_train, config)
 

@@ -8,7 +8,8 @@ autoenc_conv_ed(
   input_size,
   encoding_size,
   batch_size = 32,
-  num_epochs = 100L,
+  epochs = 100L,
+  num_epochs = NULL,
   learning_rate = 0.001,
   validation_strategy = c("static", "dynamic"),
   stopping_rule = c("none", "patience", "sma", "ema", "h"),
@@ -18,8 +19,7 @@ autoenc_conv_ed(
   sma_window = 5L,
   ema_alpha = 0.2,
   test_window = 30L,
-  p_value = 0.05,
-  seed = 42L
+  p_value = 0.05
 )
 }
 \arguments{
@@ -29,7 +29,9 @@ autoenc_conv_ed(
 
 \item{batch_size}{Integer. Mini-batch size used during training. Default is 32.}
 
-\item{num_epochs}{Integer. Maximum number of training epochs. Default is 100.}
+\item{epochs}{Integer. Maximum number of training epochs. Default is 100.}
+
+\item{num_epochs}{Deprecated compatibility alias for \code{epochs}. If informed, it overrides \code{epochs}.}
 
 \item{learning_rate}{Numeric. Optimizer learning rate. Default is 0.001.}
 
@@ -50,8 +52,6 @@ autoenc_conv_ed(
 \item{test_window}{Integer. Window size used by \code{h}. Default is 30.}
 
 \item{p_value}{Numeric. Significance threshold used by \code{h}. Default is 0.05.}
-
-\item{seed}{Integer. Seed used by data splitting routines. Default is 42.}
 }
 \value{
 A \code{autoenc_conv_ed} object.
@@ -63,7 +63,7 @@ sequences of observations. Wraps a PyTorch implementation.
 \examples{
 \dontrun{
 X <- matrix(rnorm(1000), nrow = 50, ncol = 20)
-ae <- autoenc_conv_ed(input_size = 20, encoding_size = 5, num_epochs = 100)
+ae <- autoenc_conv_ed(input_size = 20, encoding_size = 5, epochs = 100)
 ae <- daltoolbox::fit(ae, X)
 X_hat <- daltoolbox::transform(ae, X)  # same dims as X
 mean((X - X_hat)^2)
