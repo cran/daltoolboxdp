@@ -2,8 +2,15 @@
 #' @description Time-series forecaster using a configurable feedforward PyTorch MLP with unified
 #'   training strategies and a Python backend.
 #'
+#' @details The object follows the `tspredit::ts_regsw()` contract: `fit()`
+#'   receives supervised lag matrices and `predict()` returns a plain numeric
+#'   vector, even when upstream time-series wrappers attach auxiliary metadata to
+#'   forecast objects.
+#'
 #' @param preprocess Optional preprocessing/normalization object.
 #' @param input_size Integer. Number of lagged inputs per training example.
+#' @param input_map Lag-selection strategy object, typically created by
+#'   `tspredit::ts_lagmap()`.
 #' @param hidden_sizes Integer vector with hidden layer sizes.
 #' @param dropout Numeric. Dropout rate.
 #' @param activation Character. Hidden activation function. One of
@@ -32,6 +39,7 @@
 #' library(daltoolboxdp)
 #' model <- torch_ts_mlp(
 #'   input_size = 12,
+#'   input_map = tspredit::ts_lagmap("pacf"),
 #'   hidden_sizes = c(32L, 16L),
 #'   normalization = "batch",
 #'   init_method = "kaiming_uniform",
@@ -43,6 +51,7 @@
 #' @export
 torch_ts_mlp <- function(preprocess = NA,
                          input_size = NA,
+                         input_map = tspredit::ts_lagmap(),
                          hidden_sizes = c(16L, 8L),
                          dropout = 0,
                          activation = c("relu", "leaky_relu", "elu", "gelu", "tanh"),
@@ -68,7 +77,7 @@ torch_ts_mlp <- function(preprocess = NA,
   validation_strategy <- match.arg(validation_strategy)
   stopping_rule <- match.arg(stopping_rule)
 
-  obj <- tspredit::ts_regsw(preprocess, input_size)
+  obj <- tspredit::ts_regsw(preprocess, input_size, input_map)
   obj$hidden_sizes <- as.integer(hidden_sizes)
   obj$dropout <- as.numeric(dropout)
   obj$activation <- activation
@@ -113,6 +122,7 @@ do_fit.torch_ts_mlp <- function(obj, x, y) {
   }
 
   df_train <- as.data.frame(x)
+  # Keep the target column as a plain vector for the Python backend.
   df_train$t0 <- as.vector(y)
 
   obj$model <- torch_ts_mlp_fit(
@@ -146,5 +156,7 @@ do_predict.torch_ts_mlp <- function(obj, x) {
 
   x_values <- as.data.frame(x)
   x_values$t0 <- 0
-  torch_ts_mlp_predict(obj$model, x_values, batch_size = obj$batch_size)
+  # Return only the numeric forecast path expected by tspredit and downstream
+  # wrappers such as harbinger.
+  as.vector(torch_ts_mlp_predict(obj$model, x_values, batch_size = obj$batch_size))
 }

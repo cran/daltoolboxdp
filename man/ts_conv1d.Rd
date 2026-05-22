@@ -7,6 +7,7 @@
 ts_conv1d(
   preprocess = NA,
   input_size = NA,
+  input_map = tspredit::ts_lagmap(),
   in_channels = 1L,
   sequence_length = NULL,
   conv_channels = 64L,
@@ -34,6 +35,9 @@ ts_conv1d(
 \item{preprocess}{Optional preprocessing/normalization object.}
 
 \item{input_size}{Integer. Number of lagged inputs per training example.}
+
+\item{input_map}{Lag-selection strategy object, typically created by
+\code{tspredit::ts_lagmap()}.}
 
 \item{in_channels}{Integer. Number of channels used to reshape each example before the convolution.
 \code{input_size} must equal \code{in_channels * sequence_length}.}
@@ -94,12 +98,18 @@ The Conv1D forecaster now supports multiple convolutional blocks, explicit chann
 reshaping, optional pooling, and a configurable dense prediction head. Keep the defaults to
 preserve the original single-channel behavior, or define architectures such as
 \code{conv_channels = c(32L, 64L)} and \code{dense_hidden_sizes = c(64L, 16L)}.
+
+The object follows the \code{tspredit::ts_regsw()} contract: \code{fit()} receives
+supervised lag matrices and \code{predict()} returns a plain numeric vector, even
+when upstream time-series wrappers attach auxiliary metadata to forecast
+objects.
 }
 \examples{
 \dontrun{
 library(daltoolboxdp)
 model <- ts_conv1d(
   input_size = 12,
+  input_map = tspredit::ts_lagmap("acf"),
   in_channels = 1L,
   conv_channels = c(32L, 64L),
   dense_hidden_sizes = c(64L, 16L),

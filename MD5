@@ -1,4 +1,4 @@
-bf857787128b07f088d617952ea00cc0 *DESCRIPTION
+2926bf755fbfdcd084f5d6a102ffb2db *DESCRIPTION
 70f9ea80603794826e1a2a8ad0b4b593 *LICENSE
 9b5533e1c223e99e466d596948cb99fb *NAMESPACE
 f7a26d9ff075e388ac4f926d4603f5eb *R/autoenc-utils.R
@@ -25,10 +25,10 @@ a4dffaeec981ff8b64093f0f354cf608 *R/autoenc_lstm_ed.R
 cfc054a15aa950af4cf56a0d72f60463 *R/skcla_svc.R
 fe4c0fa02f1357a79ee3c76eceb3e8e5 *R/skcla_utils.R
 c4dc5cab453f8eea8ae330ad24472bc2 *R/torch_cla_mlp.R
-92f74209546f35ae4ce41f36b3a6dae9 *R/torch_reg_mlp.R
-f01323974829366439906d4c6647de89 *R/torch_ts_mlp.R
-11b85310dcaff9dfd0661988c4f94606 *R/ts_conv1d.R
-073fa0c189bde155d627bbca0f7cf3b3 *R/ts_lstm.R
+6c62afb06bb562674a44b9be698f076c *R/torch_reg_mlp.R
+f1bf2806dd645011ef9b37699958148a *R/torch_ts_mlp.R
+7c3469f57182e26e5cf7761abe9ad7fa *R/ts_conv1d.R
+501b921c340df014a6db3839fd2acc58 *R/ts_lstm.R
 0e76db2ecfeee5a219b44abd650b7b6e *README.md
 342241aa20c32921ffc623eb46487e2c *inst/logo.png
 acc6005ce5b9533fb2ebf9a8670a0bfd *inst/logo.pptx
@@ -75,7 +75,7 @@ b0d20a28e7c41a0b23103105e7c09980 *man/autoenc_variational_ed.Rd
 1c9214fceacbc02a8e1885ea3c75c4b5 *man/skcla_rf.Rd
 69f24c573bccecbdfee08e9c8d26952d *man/skcla_svc.Rd
 b6d2be774966b96400f98e174ae7548b *man/torch_cla_mlp.Rd
-92151ad7fb2f179ecff9051d3e7621fc *man/torch_reg_mlp.Rd
-c8b5a8bba42ba3af9f4832a15193a106 *man/torch_ts_mlp.Rd
-75378f1ca5bf095ed9c56623c2090961 *man/ts_conv1d.Rd
-4bc10bdb0134704df8851a5840d1dc5e *man/ts_lstm.Rd
+e084ee3b7c888ae3277b4dddbec999ff *man/torch_reg_mlp.Rd
+ff296383109575467dee6a0997beef00 *man/torch_ts_mlp.Rd
+ce7e252a75cdec3dda4df7a514e7575e *man/ts_conv1d.Rd
+814c5d9dbb006787b4efe06ac20c7eee *man/ts_lstm.Rd

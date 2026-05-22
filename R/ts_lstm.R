@@ -7,8 +7,15 @@
 #' an optional dense head after the recurrent block, and explicit reshaping of each row into
 #' a sequence via `sequence_length`. Keeping `sequence_length = 1L` reproduces the previous behavior.
 #'
+#' The object follows the `tspredit::ts_regsw()` contract: `fit()` receives
+#' supervised lag matrices and `predict()` returns a plain numeric vector, even
+#' when upstream time-series wrappers attach auxiliary metadata to forecast
+#' objects.
+#'
 #' @param preprocess Optional preprocessing/normalization object.
 #' @param input_size Integer. Number of lagged inputs per training example.
+#' @param input_map Lag-selection strategy object, typically created by
+#'   `tspredit::ts_lagmap()`.
 #' @param hidden_size Optional integer. Hidden size used inside the LSTM. If `NULL`, defaults to `input_size`.
 #' @param sequence_length Integer. Number of time steps represented by each row. `input_size`
 #'   must be divisible by `sequence_length`. Default is `1L`.
@@ -36,6 +43,7 @@
 #' library(daltoolboxdp)
 #' model <- ts_lstm(
 #'   input_size = 12,
+#'   input_map = tspredit::ts_lagmap("seasonal", seasonality = 4),
 #'   hidden_size = 16L,
 #'   sequence_length = 3L,
 #'   num_layers = 2L,
@@ -49,6 +57,7 @@
 #' @export
 ts_lstm <- function(preprocess = NA,
                     input_size = NA,
+                    input_map = tspredit::ts_lagmap(),
                     hidden_size = NULL,
                     sequence_length = 1L,
                     num_layers = 1L,
@@ -72,7 +81,7 @@ ts_lstm <- function(preprocess = NA,
   validation_strategy <- match.arg(validation_strategy)
   stopping_rule <- match.arg(stopping_rule)
 
-  obj <- tspredit::ts_regsw(preprocess, input_size)
+  obj <- tspredit::ts_regsw(preprocess, input_size, input_map)
   obj$hidden_size <- if (is.null(hidden_size)) as.integer(input_size) else as.integer(hidden_size)
   obj$sequence_length <- as.integer(sequence_length)
   obj$num_layers <- as.integer(num_layers)
@@ -119,6 +128,7 @@ do_fit.ts_lstm <- function(obj, x, y) {
   }
 
   df_train <- as.data.frame(x)
+  # Keep the target column as a plain vector for the Python backend.
   df_train$t0 <- as.vector(y)
 
   obj$model <- ts_lstm_fit(
@@ -152,5 +162,7 @@ do_predict.ts_lstm <- function(obj, x) {
 
   x_values <- as.data.frame(x)
   x_values$t0 <- 0
-  ts_lstm_predict(obj$model, x_values, batch_size = obj$batch_size)
+  # Return only the numeric forecast path expected by tspredit and downstream
+  # wrappers such as harbinger.
+  as.vector(ts_lstm_predict(obj$model, x_values, batch_size = obj$batch_size))
 }
