@@ -1,4 +1,4 @@
-2926bf755fbfdcd084f5d6a102ffb2db *DESCRIPTION
+3e8acced699e24f7accba401e015a129 *DESCRIPTION
 70f9ea80603794826e1a2a8ad0b4b593 *LICENSE
 9b5533e1c223e99e466d596948cb99fb *NAMESPACE
 f7a26d9ff075e388ac4f926d4603f5eb *R/autoenc-utils.R
@@ -34,7 +34,7 @@ f1bf2806dd645011ef9b37699958148a *R/torch_ts_mlp.R
 acc6005ce5b9533fb2ebf9a8670a0bfd *inst/logo.pptx
 950e0f0f76bb5dabc7d6679fc29ce467 *inst/python/autoenc.py
 7fec10bd85c2a962db349155345e0c70 *inst/python/autoenc_adv.py
-96e7d4b9d87f4a6a5c7e5040ad8040cc *inst/python/autoenc_common.py
+0b7768ca71a44748e3698e063bdb8338 *inst/python/autoenc_common.py
 42aacc42323f9b9bb113f5a8a1606c44 *inst/python/autoenc_conv.py
 06d6dd3f8e4d769115a4158a543f34f7 *inst/python/autoenc_denoise.py
 c7e82b2e6b6d8afba6d4ed0b4cbaf998 *inst/python/autoenc_lstm.py
@@ -49,11 +49,11 @@ fff7119d940abdaf5e83b6726b30e2a6 *inst/python/skcla_nb.py
 89e0cd4114442d2de1df9e658e60a2f9 *inst/python/skimb_smote.py
 e32defa43d6251bb68316b483446dd24 *inst/python/skimb_smote_tomek.py
 50fbfeddabfaf5d81fabe8c0280d986c *inst/python/skimb_tomek_links.py
-f39593f219e58cdd1b3d635e0f62a2d3 *inst/python/torch_cla_mlp.py
-b62895608d28265cb4023de0093be472 *inst/python/torch_reg_mlp.py
-8cd6a3431d7057a88f639254f8995311 *inst/python/torch_ts_mlp.py
-233ae914f0d06a24f874eda378d795f3 *inst/python/ts_conv1d.py
-37e31c38ee49c93c7e09fe9ce62bfa52 *inst/python/ts_lstm.py
+2cc2bf14553e8b79dde075fb31a4b262 *inst/python/torch_cla_mlp.py
+54bd9d0c6533b7f479228eb3c1b7c423 *inst/python/torch_reg_mlp.py
+d4bf6f0879a1636b406f29d6ad21a09f *inst/python/torch_ts_mlp.py
+40ff5a8843b9d53953d216d351ab345a *inst/python/ts_conv1d.py
+c79b8033dcabecf9bdbbfa6f98b7b900 *inst/python/ts_lstm.py
 73089548fc41b7fee9038888d6572429 *man/autoenc_adv_e.Rd
 c22ac7af6e9b246997d12ce3123317af *man/autoenc_adv_ed.Rd
 4e843b2bb940b32dfc3769d53a976cd6 *man/autoenc_conv_e.Rd
